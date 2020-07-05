@@ -1,15 +1,13 @@
 package search;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
     static Boolean exit = false;
     static Scanner scanner = new Scanner(System.in);
     static String[] rows;
+    static Map<String, List<Integer>> mappedRows;
 
     public static void main(String[] args) throws IOException {
         String inputFile = "";
@@ -19,6 +17,7 @@ public class Main {
             }
 
             rows = importRows(inputFile);
+            mappedRows = mapRows(rows);
         }
 
         do {
@@ -26,7 +25,7 @@ public class Main {
             int action = Integer.parseInt(scanner.nextLine());
             switch (action){
                 case 1:
-                    searchRows(scanner, rows);
+                    searchRows(scanner, mappedRows);
                     break;
                 case 2:
                     printAllRows(rows);
@@ -59,26 +58,30 @@ public class Main {
         return lines.toArray(new String[lines.size()]);
     }
 
-    public static String[] enterRows(Scanner Scanner) {
-        System.out.println("Enter the number of rows to be added:");
-        String[] rows = new String[scanner.nextInt()];
-        scanner.nextLine();
-        System.out.println(String.format("Enter %d rows:", rows.length));
-        int i = 0;
-        while (i < rows.length) {
-            String input = scanner.nextLine();
-            rows[i] = input;
-            i++;
+    private static Map<String, List<Integer>> mapRows(String[] rows) {
+        Map<String, List<Integer>> map = new HashMap<String, List<Integer>>();
+        for (int i = 0; i < rows.length; i++) {
+            for (String word : rows[i].split(",|\s+")) {
+                ArrayList<Integer> indexes = new ArrayList<Integer>();
+                word = word.toUpperCase();
+                if (map.containsKey(word)) {
+                    indexes = (ArrayList<Integer>) map.get(word);
+                    indexes.add(i);
+                } else {
+                    indexes.add(i);
+                }
+                map.put(word, indexes);
+            }
         }
-        return rows;
+        return map;
     }
 
-    public static void searchRows(Scanner scanner, String[] rows) {
+    public static void searchRows(Scanner scanner, Map<String, List<Integer>> mappedRows) {
         System.out.println("Enter search query:");
         String search = scanner.nextLine();
-        for (String row : rows) {
-            if (row.toUpperCase().contains(search.toUpperCase())) {
-                System.out.println(row.trim());
+        if(mappedRows.containsKey(search.toUpperCase())){
+            for (int index : mappedRows.get(search.toUpperCase())){
+                System.out.println(rows[index]);
             }
         }
     }
